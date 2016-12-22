@@ -23,43 +23,133 @@ namespace SMHatchingRNGTool
         };
 
 
-        private readonly object[,] mezapa =
+        private readonly string[] mezapa =
         {
-            {25, "指定なし"},
-            {0, "格闘"},
-            {1, "飛行"},
-            {2, "毒"},
-            {3, "地面"},
-            {4, "岩"},
-            {5, "虫"},
-            {6, "ゴースト"},
-            {7, "鋼"},
-            {8, "炎"},
-            {9, "水"},
-            {10, "草"},
-            {11, "電気"},
-            {12, "エスパー"},
-            {13, "氷"},
-            {14, "ドラゴン"},
-            {15, "悪"},
+            "指定なし",
+            "格闘", "飛行", "毒", "地面", "岩",
+            "虫", "ゴースト", "鋼", "炎", "水",
+            "草", "電気", "エスパー", "氷", "ドラゴン",
+            "悪",
         };
         #endregion
         
         private int[] other_tsv = new int[0];
         private readonly string[] row_iden = { "H", "A", "B", "C", "D", "S" };
+        private readonly string[] genders = { "♂", "♀", "-" };
+        private readonly string[] abilities = { "1", "2", "H" };
 
         public Form1()
         {
             InitializeComponent();
         }
-
-        private static bool IVcheck(int[] IV, int[] IVup, int[] IVlow)
+        
+        private SearchSetting getSettings()
         {
-            for (int i = 0; i < 6; i++)
+            int[] IVup = { (int)IVup1.Value, (int)IVup2.Value, (int)IVup3.Value, (int)IVup4.Value, (int)IVup5.Value, (int)IVup6.Value, };
+            int[] IVlow = { (int)IVlow1.Value, (int)IVlow2.Value, (int)IVlow3.Value, (int)IVlow4.Value, (int)IVlow5.Value, (int)IVlow6.Value, };
+            return new SearchSetting
             {
-                if (IVlow[i] > IV[i] || IV[i] > IVup[i]) return false;
+                Ability = ability.SelectedIndex - 1,
+                Gender = sex.SelectedIndex - 1,
+                HPType = mezapaType.SelectedIndex - 1,
+                IVlow = IVlow,
+                IVup = IVup,
+                Ball = ball.SelectedIndex - 1,
+                Skip = Invalid_Refine.Checked,
+            };
+        }
+        private EggRNGSearch getRNGSettings()
+        {
+            int[] pre_parent = { (int)pre_parent1.Value, (int)pre_parent2.Value, (int)pre_parent3.Value, (int)pre_parent4.Value, (int)pre_parent5.Value, (int)pre_parent6.Value, };
+            int[] post_parent = { (int)post_parent1.Value, (int)post_parent2.Value, (int)post_parent3.Value, (int)post_parent4.Value, (int)post_parent5.Value, (int)post_parent6.Value, };
+            int sex_threshold = 0;
+            switch (sex_ratio.SelectedIndex)
+            {
+                case 0: sex_threshold = 126; break;
+                case 1: sex_threshold = 31; break;
+                case 2: sex_threshold = 63; break;
+                case 3: sex_threshold = 189; break;
+                case 4: sex_threshold = 0; break;
+                case 5: sex_threshold = 252; break;
             }
+
+            var rng = new EggRNGSearch
+            {
+                GenderRatio = sex_threshold,
+                GenderRandom = sex_ratio.SelectedIndex < 4,
+                GenderMale = sex_ratio.SelectedIndex == 4,
+                GenderFemale = sex_ratio.SelectedIndex == 5,
+                International = International.Checked,
+                ShinyCharm = omamori.Checked,
+                Heterogeneous = pre_ditto.Checked || post_ditto.Checked || Heterogeneity.Checked,
+                Everstone = pre_Items.SelectedIndex == 1 || post_Items.SelectedIndex == 1,
+                DestinyKnot = pre_Items.SelectedIndex == 2 || post_Items.SelectedIndex == 2,
+                ParentAbility = (!post_ditto.Checked ? post_ability : pre_ability).SelectedIndex,
+
+                TSV = (int)TSV.Value,
+                pre_parent = pre_parent,
+                post_parent = post_parent,
+            };
+            rng.Initialize();
+            return rng;
+        }
+        private bool frameMatch(EggRNGSearch.EggRNGResult result, SearchSetting setting)
+        {
+            //ここで弾く
+            if (setting.Skip)
+                return true;
+
+            if (!(International.Checked || omamori.Checked) && shiny.Checked)
+                return false;
+
+            if (!other_TSV.Checked)
+            {
+                if (shiny.Checked && !result.Shiny)
+                    return false;
+            }
+            else
+            {
+                if (International.Checked || omamori.Checked)
+                    result.Shiny = other_tsv.Any(item => result.PSV == item);
+                if (!result.Shiny)
+                    return false;
+            }
+            if (!setting.validIVs(result.IVs))
+                return false;
+            if (!setting.mezapa_check(result.IVs))
+                return false;
+            if (setting.Ability != -1 && setting.Ability != result.Ability)
+                return false;
+            if (setting.Gender != -1 && setting.Gender != result.Gender)
+                return false;
+            if (setting.Ball != -1 && setting.Ball != result.Ball)
+                return false;
             return true;
+        }
+        private DataGridViewRow getRow(int i, EggRNGSearch rng, EggRNGSearch.EggRNGResult result, DataGridView dgv)
+        {
+            var true_psv = rng.PIDRerolls > 0 ? result.PSV.ToString("d") : "-";
+            string true_pid = International.Checked || omamori.Checked ? result.PID.ToString("X8") : "仮性格値";
+
+            DataGridViewRow row = new DataGridViewRow();
+            row.CreateCells(dgv);
+            row.SetValues(
+                i, result.FramesUsed, result.Seed128, 
+                result.IVs[0], result.IVs[1], result.IVs[2], result.IVs[3], result.IVs[4], result.IVs[5],
+                genders[result.Gender], rng.Everstone ? "変わらず" : abilities[result.Ability], natures[result.Nature], 
+                true_pid, true_psv, result.EC.ToString("X8")
+                );
+
+            for (int k = 0; k < result.InheritStats.Length; k++)
+            {
+                var color = result.InheritParents[k] == 1 ? Color.Red : Color.DodgerBlue;
+                row.Cells[3 + (int)result.InheritStats[k]].Style.ForeColor = color;
+            }
+            if (result.Shiny)
+            {
+                row.DefaultCellStyle.BackColor = Color.LightCyan;
+            }
+            return row;
         }
 
         private void k_search_Click(object sender, EventArgs e)
@@ -85,36 +175,11 @@ namespace SMHatchingRNGTool
             else
                 kotai_search();
         }
-
         private void kotai_search()
         {
-            #region 宣言
-
             int min = (int)s_min.Value;
             int max = (int)s_max.Value;
-            int u_Type = (int)mezapa[mezapaType.SelectedIndex, 0];
-            string u_ability = ability.Text;
-            string u_sex = sex.Text;
-            string u_ball = ball.Text;
-            uint psv;
 
-            #endregion
-
-            #region 遺伝
-
-            var iden_loop = pre_Items.Text == "赤い糸" || post_Items.Text == "赤い糸" ? 5 : 3;
-
-            string[] iden_oya_box = new string[iden_loop];
-            uint[] iden_box = new uint[iden_loop];
-
-            #endregion
-
-            #region stats
-
-            int[] IVup = { (int)IVup1.Value, (int)IVup2.Value, (int)IVup3.Value, (int)IVup4.Value, (int)IVup5.Value, (int)IVup6.Value, };
-            int[] IVlow = { (int)IVlow1.Value, (int)IVlow2.Value, (int)IVlow3.Value, (int)IVlow4.Value, (int)IVlow5.Value, (int)IVlow6.Value, };
-            int[] pre_parent = { (int)pre_parent1.Value, (int)pre_parent2.Value, (int)pre_parent3.Value, (int)pre_parent4.Value, (int)pre_parent5.Value, (int)pre_parent6.Value, };
-            int[] post_parent = { (int)post_parent1.Value, (int)post_parent2.Value, (int)post_parent3.Value, (int)post_parent4.Value, (int)post_parent5.Value, (int)post_parent6.Value, };
             uint[] st =
             {
                 (uint)status0.Value,
@@ -123,138 +188,31 @@ namespace SMHatchingRNGTool
                 (uint)status3.Value,
             };
 
-            uint tsv = (uint)TSV.Value;
-            #endregion
-
-            #region 性別閾値
-            int sex_threshold = 0;
-            switch (sex_ratio.SelectedIndex)
-            {
-                case 0: sex_threshold = 126; break;
-                case 1: sex_threshold = 31; break;
-                case 2: sex_threshold = 63; break;
-                case 3: sex_threshold = 189; break;
-                case 4: sex_threshold = 0; break;
-                case 5: sex_threshold = 252; break;
-            }
-            #endregion
-
             uint[] status = { st[0], st[1], st[2], st[3] };
             var tiny = new TinyMT(status, new TinyMTParameter(0x8f7011ee, 0xfc78ff1f, 0x3793fdff));
 
             List<DataGridViewRow> list = new List<DataGridViewRow>();
             k_dataGridView.Rows.Clear();
 
-            for (int i = 0; i <= max; i++)
-            {
-                var shiny_flag = false;
-                //statusの更新
-                for (int j = 0; j <= 3; j++) st[j] = tiny.status[j];
+            var setting = getSettings();
+            var rng = getRNGSettings();
 
-                var r = tiny.temper();
-                var seed = string.Join(",", tiny.status.Select(v => v.ToString("X8")).Reverse());
-                //生の乱数列からの性別と遺伝箇所
-                var row_sex = r % 252 < sex_threshold ? "♀" : "♂";
-                var row_iden_oya = r % 2 == 0 ? "先" : "後";
-
-                //計算
-                int count;
-                uint pid;
-                uint encryption_key;
-                string p_ability;
-                string p_sex;
-                string p_nature;
-                string p_ball;
-                int[] IV;
-                cal(st, out IV, out iden_box, out iden_oya_box, out p_sex, out p_ability, out p_nature, out pid, out encryption_key, out count, out p_ball);
-
-                for (int j = 0; j < iden_loop; j++)
-                {
-                    int value = (int)iden_box[j];
-                    IV[value] = iden_oya_box[j] == "先" ? pre_parent[value] : post_parent[value];
-                }
-
-                var HID = pid >> 16;
-                var LID = pid & 0xFFFF;
-                psv = (HID ^ LID) / 0x10;
-                var true_psv = International.Checked || omamori.Checked ? psv.ToString("d") : "-";
-                if (!(International.Checked || omamori.Checked) && shiny.Checked) goto ExitIF;
-                //ここで弾く
-                if (!Invalid_Refine.Checked)
-                {
-                    if (!other_TSV.Checked)
-                    {
-                        if (shiny.Checked && psv != tsv) goto ExitIF;
-                        if (psv == tsv) shiny_flag = true;
-                    }
-                    else
-                    {
-                        var for_flag = false;
-                        if (International.Checked || omamori.Checked)
-                        {
-                            if (other_tsv.Any(item => psv == item))
-                            {
-                                for_flag = true;
-                                shiny_flag = true;
-                            }
-                        }
-                        if(!for_flag) goto ExitIF;
-                    }
-                    if (!IVcheck(IV, IVup, IVlow)) goto ExitIF;
-                    if (u_Type != 25)
-                    {
-                        if (!mezapa_check(IV, u_Type)) goto ExitIF;
-                    }
-                    if (u_ability != "指定なし")
-                    {
-                        if (u_ability != p_ability) goto ExitIF;
-                    }
-                    if (u_sex != "指定なし")
-                    {
-                        if (u_sex != p_sex) goto ExitIF;
-                    }
-                    if (u_ball != "指定なし")
-                    {
-                        if (u_ball != p_ball) goto ExitIF;
-                    }
-                }
-
-                if (pre_Items.Text == "変わらず" || post_Items.Text == "変わらず") p_nature = "変わらず";
-                string true_pid = International.Checked || omamori.Checked ? pid.ToString("X8") : "仮性格値";
-
-                if (i >= min)
-                {
-                    DataGridViewRow row = new DataGridViewRow();
-                    row.CreateCells(k_dataGridView);
-                    row.SetValues(i, seed, IV[0], IV[1], IV[2], IV[3], IV[4], IV[5], p_sex, p_ability, p_nature, true_pid, encryption_key.ToString("X8"), count, true_psv, r.ToString("X8"), (r % 32).ToString("d"), row_iden[r % 6], row_iden_oya, natures[r % 25], row_sex);
-
-                    for (int k = 0; k < iden_loop; k++)
-                    {
-                        if (pre.ForeColor == Color.DodgerBlue)
-                        {
-                            row.Cells[2 + (int)iden_box[k]].Style.ForeColor = iden_oya_box[k] == "先" ? Color.DodgerBlue : Color.Red;
-                        }
-                        else
-                        {
-                            row.Cells[2 + (int)iden_box[k]].Style.ForeColor = iden_oya_box[k] == "先" ? Color.Red : Color.DodgerBlue;
-                        }
-
-                    }
-                    if (shiny_flag)
-                    {
-                        row.DefaultCellStyle.BackColor = Color.LightCyan;
-                    }
-                    list.Add(row);
-                }
-            ExitIF:;
-
+            for (int i = 1; i < min; i++)
                 tiny.nextState();
+            for (int i = min; i <= max; i++, tiny.nextState())
+            {
+                //statusの更新
+                tiny.status.CopyTo(st, 0);
+                EggRNGSearch.EggRNGResult result = rng.Generate(st);
+
+                if (!frameMatch(result, setting))
+                    continue;
+                list.Add(getRow(i, rng, result, k_dataGridView));
             }
 
             k_dataGridView.Rows.AddRange(list.ToArray());
             k_dataGridView.CurrentCell = null;
         }
-
         private void List_search_Click(object sender, EventArgs e)
         {
             if (s_min.Value > s_max.Value)
@@ -278,600 +236,54 @@ namespace SMHatchingRNGTool
             else
                 FukaList_search();
         }
-
         private void FukaList_search()
         {
-            #region 宣言
-            int min = (int)n_min.Value;
-            int max = (int)n_max.Value;
-            uint pid = 0x0;
-            int count = 0, pre_count = 0;
+            int min = (int)s_min.Value;
+            int max = (int)s_max.Value;
 
-            int International_loop = 0;
-            int omamori_loop = 0;
-            if (International.Checked) International_loop = 6;
-            if (omamori.Checked) omamori_loop = 2;
-            #endregion
-
-            #region 遺伝
-            var iden_loop = pre_Items.Text == "赤い糸" || post_Items.Text == "赤い糸" ? 5 : 3;
-
-            string[] iden_oya_box = new string[iden_loop];
-            uint[] iden_box = new uint[iden_loop];
-            string p_ability = "";
-            string p_sex = "", p_ball = "";
-
-            #endregion
-
-            #region stats
-            int[] IV = new int[6];
-            int[] IVup = new int[6];
-            int[] IVlow = new int[6];
-            int[] pre_parent = new int[6];
-            int[] post_parent = new int[6];
-            uint[] st = new uint[4];
-
-            IVup[0] = Convert.ToInt32(IVup1.Text);
-            IVup[1] = Convert.ToInt32(IVup2.Text);
-            IVup[2] = Convert.ToInt32(IVup3.Text);
-            IVup[3] = Convert.ToInt32(IVup4.Text);
-            IVup[4] = Convert.ToInt32(IVup5.Text);
-            IVup[5] = Convert.ToInt32(IVup6.Text);
-            IVlow[0] = Convert.ToInt32(IVlow1.Text);
-            IVlow[1] = Convert.ToInt32(IVlow2.Text);
-            IVlow[2] = Convert.ToInt32(IVlow3.Text);
-            IVlow[3] = Convert.ToInt32(IVlow4.Text);
-            IVlow[4] = Convert.ToInt32(IVlow5.Text);
-            IVlow[5] = Convert.ToInt32(IVlow6.Text);
-
-            pre_parent[0] = Convert.ToInt32(pre_parent1.Text);
-            pre_parent[1] = Convert.ToInt32(pre_parent2.Text);
-            pre_parent[2] = Convert.ToInt32(pre_parent3.Text);
-            pre_parent[3] = Convert.ToInt32(pre_parent4.Text);
-            pre_parent[4] = Convert.ToInt32(pre_parent5.Text);
-            pre_parent[5] = Convert.ToInt32(pre_parent6.Text);
-            post_parent[0] = Convert.ToInt32(post_parent1.Text);
-            post_parent[1] = Convert.ToInt32(post_parent2.Text);
-            post_parent[2] = Convert.ToInt32(post_parent3.Text);
-            post_parent[3] = Convert.ToInt32(post_parent4.Text);
-            post_parent[4] = Convert.ToInt32(post_parent5.Text);
-            post_parent[5] = Convert.ToInt32(post_parent6.Text);
-
-            st[0] = (uint)L_status0a.Value;
-            st[1] = (uint)L_status1a.Value;
-            st[2] = (uint)L_status2a.Value;
-            st[3] = (uint)L_status3a.Value;
-
-            uint tsv = (uint)TSV.Value;
-            #endregion
-
-            #region 性別閾値
-            int sex_threshold = 0;
-            switch (sex_ratio.SelectedIndex)
+            uint[] st =
             {
-                case 0: sex_threshold = 126; break;
-                case 1: sex_threshold = 31; break;
-                case 2: sex_threshold = 63; break;
-                case 3: sex_threshold = 189; break;
-                case 4: sex_threshold = 0; break;
-                case 5: sex_threshold = 252; break;
-                case 6: sex_threshold = 300; break;
-            }
-            #endregion
+                (uint)L_status0a.Value,
+                (uint)L_status1a.Value,
+                (uint)L_status2a.Value,
+                (uint)L_status3a.Value,
+            };
+
+            uint[] status = { st[0], st[1], st[2], st[3] };
+            var tiny = new TinyMT(status, new TinyMTParameter(0x8f7011ee, 0xfc78ff1f, 0x3793fdff));
 
             List<DataGridViewRow> list = new List<DataGridViewRow>();
             L_dataGridView.Rows.Clear();
-
-            uint[] status = { st[0], st[1], st[2], st[3] };
-            TinyMT tiny = new TinyMT(status, new TinyMTParameter(0x8f7011ee, 0xfc78ff1f, 0x3793fdff));
-
+            
+            var rng = getRNGSettings();
+            int frameCount = 0;
             for (int i = 1; i <= max; i++)
             {
-                var shiny_flag = false;
-                var seed = string.Join(",", tiny.status.Select(v => v.ToString("X8")).Reverse());
-                //最初の消費
-                var r = tiny.temper();
-                tiny.nextState();
-                count++;
-
-                //性別
-                if (sex_ratio.SelectedIndex < 4)
-                {
-                    r = tiny.temper();
-                    p_sex = r % 252 < sex_threshold ? "♀" : "♂";
-                    tiny.nextState();
-                    count++;
-                }
-                if (sex_ratio.SelectedIndex > 3)
-                {
-                    p_sex = r % 252 < sex_threshold ? "♀" : "♂";
-                }
-                if (sex_threshold == 300) p_sex = "-";
-
-                //性格
-                r = tiny.temper();
-                var p_nature = natures[r % 25];
-                tiny.nextState();
-                count++;
-
-                //両親変わらず
-                if (pre_Items.Text == "変わらず" & post_Items.Text == "変わらず")
-                {
-                    r = tiny.temper();
-                    tiny.nextState();
-                    count++;
-                }
-
-                //特性
-                r = tiny.temper();
-                int value = (int)(r % 100);
-                if (!(post_ditto.Checked || pre_ditto.Checked))
-                {
-                    if (post_ability.Text == "1")
-                    {
-                        p_ability = value < 80 ? "1" : "2";
-                    }
-                    if (post_ability.Text == "2")
-                    {
-                        p_ability = value < 20 ? "1" : "2";
-                    }
-                    if (post_ability.Text == "夢")
-                    {
-                        if (value < 20) p_ability = "1";
-                        else if (value < 40) p_ability = "2";
-                        else p_ability = "夢";
-                    }
-                }
-                else
-                {
-                    if (pre_ditto.Checked)
-                    {
-                        if (post_ability.Text == "1")
-                        {
-                            p_ability = value < 80 ? "1" : "2";
-                        }
-                        if (post_ability.Text == "2")
-                        {
-                            p_ability = value < 20 ? "1" : "2";
-                        }
-                        if (post_ability.Text == "夢")
-                        {
-                            if (value < 20) p_ability = "1";
-                            else if (value < 40) p_ability = "2";
-                            else p_ability = "夢";
-                        }
-                    }
-                    else
-                    {
-                        if (pre_ability.Text == "1")
-                        {
-                            p_ability = value < 80 ? "1" : "2";
-                        }
-                        if (pre_ability.Text == "2")
-                        {
-                            p_ability = value < 20 ? "1" : "2";
-                        }
-                        if (pre_ability.Text == "夢")
-                        {
-                            if (value < 20) p_ability = "1";
-                            else if (value < 40) p_ability = "2";
-                            else p_ability = "夢";
-                        }
-                    }
-                }
-                tiny.nextState();
-                count++;
-
-                //最初の遺伝箇所
-                int iden_count = 0;
-
-                while (true)
-                {
-                    var flag = true;
-                    r = tiny.temper();
-                    for (int k = 0; k < iden_count; k++)
-                    {
-                        if (iden_box[k] != r%6)
-                            continue;
-                        r = tiny.temper();
-                        tiny.nextState();
-                        count++;
-                        flag = false;
-                        break;
-                    }
-                    if (flag)
-                    {
-                        for (int j = 0; j < 2; j++)
-                        {
-                            r = tiny.temper();
-                            string iden_oya = r % 2 == 0 ? "先" : "後";
-                            tiny.nextState();
-
-                            if (j == 0)
-                            {
-                                iden_box[iden_count] = r % 6;
-                            }
-                            else
-                            {
-                                iden_oya_box[iden_count] = iden_oya;
-                                iden_count++;
-                            }
-                            count++;
-                        }
-                    }
-
-                    if (iden_count == iden_loop) break;
-                }
-
-                //基礎個体値
-                for (int j = 0; j < 6; j++)
-                {
-                    r = tiny.temper();
-                    IV[j] = (int)(r % 32);
-                    tiny.nextState();
-                    count++;
-                }
-
-                //暗号化定数
-                r = tiny.temper();
-                var encryption_key = r;
-                tiny.nextState();
-                count++;
-
-                //性格値判定    
-                uint LID;
-                uint HID;
-
-                if (!(International.Checked || omamori.Checked))
-                {
-                    r = tiny.temper();
-                    pid = r;
-                }
-                else
-                {
-                    for (int j = 0; j < (omamori_loop + International_loop); j++)
-                    {
-                        r = tiny.temper();
-                        pid = r;
-
-                        HID = pid >> 16;
-                        LID = pid & 0xFFFF;
-                        tiny.nextState();
-                        count++;
-                        if (!(L_TSV_shiny.Checked & ((HID ^ LID)>>4 == tsv)))
-                            continue;
-                        shiny_flag = true;
-                        break;
-                    }
-                }
-
-                //ボール消費
-                
-                if (!(post_ditto.Checked || pre_ditto.Checked || Heterogeneity.Checked))
-                {
-                    r = tiny.temper();
-                    p_ball = r % 100 >= 50 ? "先親" : "後親";
-                    tiny.nextState();
-                    count++;
-                }
-
-                //何かの消費
-                tiny.nextState();
-                count++;
+                //statusの更新
+                tiny.status.CopyTo(st, 0);
+                EggRNGSearch.EggRNGResult result = rng.Generate(st);
+                int ctr = result.FramesUsed;
+                result.FramesUsed = frameCount;
+                frameCount += ctr;
 
                 if (i >= min)
                 {
-                    for (int j = 0; j < iden_loop; j++)
-                    {
-                        value = (int)iden_box[j];
-                        IV[value] = iden_oya_box[j] == "先" ? pre_parent[value] : post_parent[value];
-                    }
-
-                    HID = pid >> 16;
-                    LID = pid & 0xFFFF;
-                    var psv = (HID ^ LID) >> 4;
-                    var true_psv = International.Checked || omamori.Checked ? psv.ToString("d") : "-";
-                    var true_pid = International.Checked || omamori.Checked ? pid.ToString("X8") : "仮性格値";
-
-                    DataGridViewRow row = new DataGridViewRow();
-                    row.CreateCells(L_dataGridView);
-                    row.SetValues(i, pre_count, seed, IV[0], IV[1], IV[2], IV[3], IV[4], IV[5], p_sex, p_ability, p_nature, true_pid, true_psv, encryption_key.ToString("X8"));
-
-                    for (int k = 0; k < iden_loop; k++)
-                    {
-                        if (pre.ForeColor == Color.DodgerBlue)
-                        {
-                            row.Cells[3 + (int)iden_box[k]].Style.ForeColor = iden_oya_box[k] == "先" ? Color.DodgerBlue : Color.Red;
-                        }
-                        else
-                        {
-                            row.Cells[3 + (int)iden_box[k]].Style.ForeColor = iden_oya_box[k] == "先" ? Color.Red : Color.DodgerBlue;
-                        }
-
-                    }
-                    if (shiny_flag)
-                    {
-                        row.DefaultCellStyle.BackColor = Color.LightCyan;
-                    }
+                    var row = getRow(i, rng, result, L_dataGridView);
                     list.Add(row);
                 }
-                pre_count = count;
+                // Continue adjacents
+                rng.tiny.status.CopyTo(tiny.status, 0);
             }
 
             L_dataGridView.Rows.AddRange(list.ToArray());
             L_dataGridView.CurrentCell = null;
         }
 
-        private void cal(uint[] st, out int[] IV, out uint[] iden_box, out string[] iden_oya_box, out string p_sex, out string p_ability, out string p_nature, out uint pid, out uint encryption_key, out int count, out string p_ball)
-        {
-            #region 宣言その他もろもろ
-
-            count = 0;
-            p_ability = "";
-            p_nature = "";
-            p_sex = "";
-            p_ball = "";
-            pid = 0x0;
-            encryption_key = 0x0;
-            IV = new int[] { 0, 0, 0, 0, 0, 0 };
-
-            int International_loop = 0;
-            int omamori_loop = 0;
-            if (International.Checked) International_loop = 6;
-            if (omamori.Checked) omamori_loop = 2;
-            #endregion
-
-            uint[] status = { st[0], st[1], st[2], st[3] };
-            TinyMT tiny = new TinyMT(status, new TinyMTParameter(0x8f7011ee, 0xfc78ff1f, 0x3793fdff));
-
-            #region 性別閾値
-            int sex_threshold = 0;
-            if (sex_ratio.SelectedIndex == 0)
-            {
-                sex_threshold = 126;
-            }
-            else if (sex_ratio.SelectedIndex == 1)
-            {
-                sex_threshold = 32;
-            }
-            else if (sex_ratio.SelectedIndex == 2)
-            {
-                sex_threshold = 63;
-            }
-            else if (sex_ratio.SelectedIndex == 3)
-            {
-                sex_threshold = 189;
-            }
-            else if (sex_ratio.SelectedIndex == 4)
-            {
-                sex_threshold = 0;
-            }
-            else if (sex_ratio.SelectedIndex == 5)
-            {
-                sex_threshold = 252;
-            }
-            else if (sex_ratio.SelectedIndex == 6)
-            {
-                sex_threshold = 300;
-            }
-            #endregion
-
-            #region 遺伝箇所
-            int iden_loop = 0;
-            if (pre_Items.Text == "赤い糸" || post_Items.Text == "赤い糸") iden_loop = 5;
-            else iden_loop = 3;
-
-            if (iden_loop == 3)
-            {
-                iden_box = new uint[] { 0, 0, 0 };
-                iden_oya_box = new string[] { "", "", "" };
-            }
-            else
-            {
-                iden_box = new uint[] { 0, 0, 0, 0, 0 };
-                iden_oya_box = new string[] { "", "", "", "", "" };
-            }
-            #endregion
-
-            //最初の消費
-            var r = tiny.temper();
-            tiny.nextState();
-            count++;
-
-            //性別
-            if (sex_ratio.SelectedIndex < 4) 
-            {
-                r = tiny.temper();
-                p_sex = (r % 252 < sex_threshold) ? "♀" : "♂";
-                tiny.nextState();
-                count++;
-            }
-            if (sex_ratio.SelectedIndex > 3) 
-            {
-                p_sex = (r % 252 < sex_threshold) ? "♀" : "♂";
-            }
-            if (sex_threshold == 300) p_sex = "-";
-
-            //性格
-            r = tiny.temper();
-            p_nature = natures[r % 25];
-            tiny.nextState();
-            count++;
-
-            //両親変わらず
-            if (pre_Items.Text == "変わらず" & post_Items.Text == "変わらず")
-            {
-                r = tiny.temper();
-                tiny.nextState();
-                count++;
-            }
-
-
-            //特性
-            r = tiny.temper();
-            int value = (int)(r % 100);
-            if (!(post_ditto.Checked || pre_ditto.Checked))
-            {
-                if (post_ability.Text == "1")
-                {
-                    p_ability = value < 80 ? "1" : "2";
-                }
-                if (post_ability.Text == "2")
-                {
-                    p_ability = value < 20 ? "1" : "2";
-                }
-                if (post_ability.Text == "夢")
-                {
-                    if (value < 20) p_ability = "1";
-                    else if (value < 40) p_ability = "2";
-                    else p_ability = "夢";
-                }
-            }
-            else
-            {
-                if (pre_ditto.Checked)
-                {
-                    if (post_ability.Text == "1")
-                    {
-                        p_ability = value < 80 ? "1" : "2";
-                    }
-                    if (post_ability.Text == "2")
-                    {
-                        p_ability = value < 20 ? "1" : "2";
-                    }
-                    if (post_ability.Text == "夢")
-                    {
-                        if (value < 20) p_ability = "1";
-                        else if (value < 40) p_ability = "2";
-                        else p_ability = "夢";
-                    }
-                }
-                else
-                {
-                    if (pre_ability.Text == "1")
-                    {
-                        p_ability = value < 80 ? "1" : "2";
-                    }
-                    if (pre_ability.Text == "2")
-                    {
-                        p_ability = value < 20 ? "1" : "2";
-                    }
-                    if (pre_ability.Text == "夢")
-                    {
-                        if (value < 20) p_ability = "1";
-                        else if (value < 40) p_ability = "2";
-                        else p_ability = "夢";
-                    }
-                }
-            }
-            tiny.nextState();
-            count++;
-
-            //最初の遺伝箇所
-            int iden_count = 0;
-
-            while (true)
-            {
-                var flag = true;
-                r = tiny.temper();
-                for (int k = 0; k < iden_count; k++)
-                {
-                    if (iden_box[k] != r%6)
-                        continue;
-
-                    r = tiny.temper();
-                    tiny.nextState();
-                    count++;
-                    flag = false;
-                    break;
-                }
-                if (flag)
-                {
-                    for (int j = 0; j < 2; j++)
-                    {
-                        r = tiny.temper();
-                        string iden_oya = (r % 2 == 0) ? "先" : "後";
-                        tiny.nextState();
-
-                        if (j == 0)
-                        {
-                            iden_box[iden_count] = r % 6;
-                        }
-                        else
-                        {
-                            iden_oya_box[iden_count] = iden_oya;
-                            iden_count++;
-                        }
-                        count++;
-                    }
-                }
-
-                if (iden_count == iden_loop) break;
-            }
-
-            //基礎個体値
-            for (int j = 0; j < 6; j++)
-            {
-                r = tiny.temper();
-                IV[j] = (int)(r % 32);
-                tiny.nextState();
-                count++;
-            }
-            //暗号化定数
-
-            r = tiny.temper();
-            encryption_key = r;
-            tiny.nextState();
-            count++;
-
-            //性格値判定
-            uint tsv = (uint)TSV.Value;
-
-            if (!(International.Checked || omamori.Checked))
-            {
-                r = tiny.temper();
-                pid = r;
-            }
-            else
-            {
-                int loopCount = omamori_loop + International_loop;
-                for (int j = 0; j < loopCount; j++)
-                {
-                    r = tiny.temper();
-                    pid = r;
-
-                    var HID = pid >> 16;
-                    var LID = pid & 0xFFFF;
-                    tiny.nextState();
-                    count++;
-                    if (other_TSV.Checked)
-                        continue;
-
-                    if ((shiny.Checked || k_TSV_shiny.Checked) && (HID ^ LID) >> 4 == tsv)
-                        break;
-                }
-            }
-            //ボール消費
-            if (!(post_ditto.Checked || pre_ditto.Checked　|| Heterogeneity.Checked))
-            {
-                r = tiny.temper();
-                p_ball = r % 100 >= 50 ? "先親" : "後親";
-                tiny.nextState();
-                count++;
-            }
-
-            //something
-            r = tiny.temper();
-            tiny.nextState();
-            count++;
-        }
-
         private void Form1_Load(object sender, EventArgs e)
         {
             k_dataGridView.DefaultCellStyle.Font = new Font("Consolas", 9);
-            k_dataGridView.Columns[20].DefaultCellStyle.Font = new Font("ＭＳ ゴシック", 9);
-            k_dataGridView.Columns[8].DefaultCellStyle.Font = new Font("ＭＳ ゴシック", 9);
             L_dataGridView.DefaultCellStyle.Font = new Font("Consolas", 9);
+            k_dataGridView.Columns[9].DefaultCellStyle.Font = new Font("ＭＳ ゴシック", 9);
             L_dataGridView.Columns[9].DefaultCellStyle.Font = new Font("ＭＳ ゴシック", 9);
 
             Type dgvtype = typeof(DataGridView);
@@ -879,15 +291,8 @@ namespace SMHatchingRNGTool
             dgvPropertyInfo.SetValue(k_dataGridView, true, null);
             dgvPropertyInfo.SetValue(L_dataGridView, true, null);
 
-            for (int i = 0; i < mezapa.GetLength(0); i++)
-            {
-                mezapaType.Items.Add(mezapa[i, 1]);
-            }
-
-            for (int co = 15; co < 20; co++)
-            {
-                k_dataGridView.Columns[co].DefaultCellStyle.BackColor = Color.Gainsboro;
-            }
+            foreach (string t in mezapa)
+                mezapaType.Items.Add(t);
 
             pre_Items.SelectedIndex = 0;
             post_Items.SelectedIndex = 0;
@@ -902,7 +307,6 @@ namespace SMHatchingRNGTool
             loadConfig();
             other_TSV.Enabled = loadTSV();
         }
-
         private void loadConfig()
         {
             if (File.Exists("config.txt"))
@@ -976,12 +380,6 @@ namespace SMHatchingRNGTool
 
             other_tsv = tsvs;
             return true;
-        }
-
-        private static bool mezapa_check(int[] IV, int u_Type)
-        {
-            var val = 15 * ((IV[0] & 1) + 2 * (IV[1] & 1) + 4 * (IV[2] & 1) + 8 * (IV[5] & 1) + 16 * (IV[3] & 1) + 32 * (IV[4] & 1)) / 63;
-            return u_Type == val;
         }
 
         private void SelectAllToolStripMenuItem_Click(object sender, EventArgs e)
