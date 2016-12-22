@@ -14,3 +14,15 @@ This is the Pokemon SunMoon Hatching RNG Tool.
 
 ## Author
 [@quan_dra](https://twitter.com/quan_dra)
+
+
+##使用ライブラリ
+
+#### [TinyMT](https://github.com/MersenneTwister-Lab/TinyMT)
+
+> The BSD 3-Clause License
+> 
+> Copyright (c) 2011, 2013 Mutsuo Saito, Makoto Matsumoto, Hiroshima University and The University of Tokyo.
+
+* **ライセンス :** The BSD 3-Clause License
+* **ライセンス全文 :** [licenses/TinyMT.txt](licenses/TinyMT.txt)
