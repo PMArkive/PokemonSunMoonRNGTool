@@ -43,12 +43,12 @@
             return t0;
         }
 
-        private static readonly uint TINYMT32_MASK = 0x7FFFFFFF;
-        private static readonly int TINYMT32_SH0 = 1;
-        private static readonly int TINYMT32_SH1 = 10;
-        private static readonly int TINYMT32_SH8 = 8;
+        private const uint TINYMT32_MASK = 0x7FFFFFFF;
+        private const int TINYMT32_SH0 = 1;
+        private const int TINYMT32_SH1 = 10;
+        private const int TINYMT32_SH8 = 8;
 
         public uint[] status { get; set; }
-        private TinyMTParameter param;
+        private readonly TinyMTParameter param;
     }
 }
