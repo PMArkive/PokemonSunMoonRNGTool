@@ -142,7 +142,7 @@ namespace SMHatchingRNGTool
 
             for (int k = 0; k < result.InheritStats.Length; k++)
             {
-                var color = result.InheritParents[k] == 1 ? Color.Red : Color.DodgerBlue;
+                var color = result.InheritParents[k] == 0 ? pre.ForeColor : post.ForeColor;
                 row.Cells[3 + (int)result.InheritStats[k]].Style.ForeColor = color;
             }
             if (result.Shiny)
