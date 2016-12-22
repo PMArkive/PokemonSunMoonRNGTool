@@ -179,9 +179,13 @@
             this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.L_status0a = new System.Windows.Forms.NumericUpDown();
             this.n_min = new System.Windows.Forms.NumericUpDown();
+            this.L_status1a = new System.Windows.Forms.NumericUpDown();
             this.L_TSV_shiny = new System.Windows.Forms.CheckBox();
+            this.L_status2a = new System.Windows.Forms.NumericUpDown();
             this.n_max = new System.Windows.Forms.NumericUpDown();
+            this.L_status3a = new System.Windows.Forms.NumericUpDown();
             this.label63 = new System.Windows.Forms.Label();
             this.label64 = new System.Windows.Forms.Label();
             this.label65 = new System.Windows.Forms.Label();
@@ -192,10 +196,7 @@
             this.label70 = new System.Windows.Forms.Label();
             this.label71 = new System.Windows.Forms.Label();
             this.label72 = new System.Windows.Forms.Label();
-            this.L_status0a = new System.Windows.Forms.NumericUpDown();
-            this.L_status1a = new System.Windows.Forms.NumericUpDown();
-            this.L_status2a = new System.Windows.Forms.NumericUpDown();
-            this.L_status3a = new System.Windows.Forms.NumericUpDown();
+            this.B_SaveConfig = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.k_dataGridView)).BeginInit();
             this.contextMenuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pre_parent1)).BeginInit();
@@ -239,11 +240,11 @@
             ((System.ComponentModel.ISupportInitialize)(this.L_dataGridView)).BeginInit();
             this.contextMenuStrip2.SuspendLayout();
             this.groupBox5.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.n_min)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.n_max)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.L_status0a)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n_min)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.L_status1a)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.L_status2a)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n_max)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.L_status3a)).BeginInit();
             this.SuspendLayout();
             // 
@@ -251,6 +252,9 @@
             // 
             this.k_dataGridView.AllowUserToAddRows = false;
             this.k_dataGridView.AllowUserToResizeColumns = false;
+            this.k_dataGridView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.k_dataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.k_dataGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Column1,
@@ -1826,6 +1830,9 @@
             // 
             // tabControl1
             // 
+            this.tabControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Location = new System.Drawing.Point(12, 13);
@@ -1877,6 +1884,9 @@
             // 
             this.L_dataGridView.AllowUserToAddRows = false;
             this.L_dataGridView.AllowUserToResizeColumns = false;
+            this.L_dataGridView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.L_dataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.L_dataGridView.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.Column21,
@@ -2042,6 +2052,25 @@
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "検索範囲";
             // 
+            // L_status0a
+            // 
+            this.L_status0a.Font = new System.Drawing.Font("Consolas", 9F);
+            this.L_status0a.Hexadecimal = true;
+            this.L_status0a.Location = new System.Drawing.Point(118, 117);
+            this.L_status0a.Maximum = new decimal(new int[] {
+            -1,
+            0,
+            0,
+            0});
+            this.L_status0a.Name = "L_status0a";
+            this.L_status0a.Size = new System.Drawing.Size(80, 22);
+            this.L_status0a.TabIndex = 5;
+            this.L_status0a.Value = new decimal(new int[] {
+            -1091568946,
+            0,
+            0,
+            0});
+            // 
             // n_min
             // 
             this.n_min.Font = new System.Drawing.Font("Consolas", 9F);
@@ -2057,6 +2086,25 @@
             this.n_min.Enter += new System.EventHandler(this.NumericUpDown_Enter);
             this.n_min.Validating += new System.ComponentModel.CancelEventHandler(this.NumericUpDown_Check);
             // 
+            // L_status1a
+            // 
+            this.L_status1a.Font = new System.Drawing.Font("Consolas", 9F);
+            this.L_status1a.Hexadecimal = true;
+            this.L_status1a.Location = new System.Drawing.Point(118, 87);
+            this.L_status1a.Maximum = new decimal(new int[] {
+            -1,
+            0,
+            0,
+            0});
+            this.L_status1a.Name = "L_status1a";
+            this.L_status1a.Size = new System.Drawing.Size(80, 22);
+            this.L_status1a.TabIndex = 3;
+            this.L_status1a.Value = new decimal(new int[] {
+            -559038737,
+            0,
+            0,
+            0});
+            // 
             // L_TSV_shiny
             // 
             this.L_TSV_shiny.AutoSize = true;
@@ -2068,6 +2116,25 @@
             this.L_TSV_shiny.TabIndex = 183;
             this.L_TSV_shiny.Text = "TSVを考慮した計算をする";
             this.L_TSV_shiny.UseVisualStyleBackColor = true;
+            // 
+            // L_status2a
+            // 
+            this.L_status2a.Font = new System.Drawing.Font("Consolas", 9F);
+            this.L_status2a.Hexadecimal = true;
+            this.L_status2a.Location = new System.Drawing.Point(118, 57);
+            this.L_status2a.Maximum = new decimal(new int[] {
+            -1,
+            0,
+            0,
+            0});
+            this.L_status2a.Name = "L_status2a";
+            this.L_status2a.Size = new System.Drawing.Size(80, 22);
+            this.L_status2a.TabIndex = 2;
+            this.L_status2a.Value = new decimal(new int[] {
+            -559023410,
+            0,
+            0,
+            0});
             // 
             // n_max
             // 
@@ -2088,6 +2155,25 @@
             0});
             this.n_max.Enter += new System.EventHandler(this.NumericUpDown_Enter);
             this.n_max.Validating += new System.ComponentModel.CancelEventHandler(this.NumericUpDown_Check);
+            // 
+            // L_status3a
+            // 
+            this.L_status3a.Font = new System.Drawing.Font("Consolas", 9F);
+            this.L_status3a.Hexadecimal = true;
+            this.L_status3a.Location = new System.Drawing.Point(118, 26);
+            this.L_status3a.Maximum = new decimal(new int[] {
+            -1,
+            0,
+            0,
+            0});
+            this.L_status3a.Name = "L_status3a";
+            this.L_status3a.Size = new System.Drawing.Size(80, 22);
+            this.L_status3a.TabIndex = 1;
+            this.L_status3a.Value = new decimal(new int[] {
+            305419896,
+            0,
+            0,
+            0});
             // 
             // label63
             // 
@@ -2186,89 +2272,25 @@
             this.label72.TabIndex = 61;
             this.label72.Text = "～";
             // 
-            // L_status0a
+            // B_SaveConfig
             // 
-            this.L_status0a.Font = new System.Drawing.Font("Consolas", 9F);
-            this.L_status0a.Hexadecimal = true;
-            this.L_status0a.Location = new System.Drawing.Point(118, 117);
-            this.L_status0a.Maximum = new decimal(new int[] {
-            -1,
-            0,
-            0,
-            0});
-            this.L_status0a.Name = "L_status0a";
-            this.L_status0a.Size = new System.Drawing.Size(80, 22);
-            this.L_status0a.TabIndex = 5;
-            this.L_status0a.Value = new decimal(new int[] {
-            -1091568946,
-            0,
-            0,
-            0});
-            // 
-            // L_status1a
-            // 
-            this.L_status1a.Font = new System.Drawing.Font("Consolas", 9F);
-            this.L_status1a.Hexadecimal = true;
-            this.L_status1a.Location = new System.Drawing.Point(118, 87);
-            this.L_status1a.Maximum = new decimal(new int[] {
-            -1,
-            0,
-            0,
-            0});
-            this.L_status1a.Name = "L_status1a";
-            this.L_status1a.Size = new System.Drawing.Size(80, 22);
-            this.L_status1a.TabIndex = 3;
-            this.L_status1a.Value = new decimal(new int[] {
-            -559038737,
-            0,
-            0,
-            0});
-            // 
-            // L_status2a
-            // 
-            this.L_status2a.Font = new System.Drawing.Font("Consolas", 9F);
-            this.L_status2a.Hexadecimal = true;
-            this.L_status2a.Location = new System.Drawing.Point(118, 57);
-            this.L_status2a.Maximum = new decimal(new int[] {
-            -1,
-            0,
-            0,
-            0});
-            this.L_status2a.Name = "L_status2a";
-            this.L_status2a.Size = new System.Drawing.Size(80, 22);
-            this.L_status2a.TabIndex = 2;
-            this.L_status2a.Value = new decimal(new int[] {
-            -559023410,
-            0,
-            0,
-            0});
-            // 
-            // L_status3a
-            // 
-            this.L_status3a.Font = new System.Drawing.Font("Consolas", 9F);
-            this.L_status3a.Hexadecimal = true;
-            this.L_status3a.Location = new System.Drawing.Point(118, 26);
-            this.L_status3a.Maximum = new decimal(new int[] {
-            -1,
-            0,
-            0,
-            0});
-            this.L_status3a.Name = "L_status3a";
-            this.L_status3a.Size = new System.Drawing.Size(80, 22);
-            this.L_status3a.TabIndex = 1;
-            this.L_status3a.Value = new decimal(new int[] {
-            305419896,
-            0,
-            0,
-            0});
+            this.B_SaveConfig.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.B_SaveConfig.Location = new System.Drawing.Point(1036, 4);
+            this.B_SaveConfig.Name = "B_SaveConfig";
+            this.B_SaveConfig.Size = new System.Drawing.Size(98, 25);
+            this.B_SaveConfig.TabIndex = 179;
+            this.B_SaveConfig.Text = "Save Config";
+            this.B_SaveConfig.UseVisualStyleBackColor = true;
+            this.B_SaveConfig.Click += new System.EventHandler(this.B_SaveConfig_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1146, 790);
+            this.Controls.Add(this.B_SaveConfig);
             this.Controls.Add(this.tabControl1);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.MinimumSize = new System.Drawing.Size(1162, 829);
             this.Name = "Form1";
             this.Text = "Pokemon SunMoon Hatching RNG Tool";
             this.Load += new System.EventHandler(this.Form1_Load);
@@ -2320,11 +2342,11 @@
             this.contextMenuStrip2.ResumeLayout(false);
             this.groupBox5.ResumeLayout(false);
             this.groupBox5.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.n_min)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.n_max)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.L_status0a)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n_min)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.L_status1a)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.L_status2a)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.n_max)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.L_status3a)).EndInit();
             this.ResumeLayout(false);
 
@@ -2499,6 +2521,7 @@
         private System.Windows.Forms.NumericUpDown L_status1a;
         private System.Windows.Forms.NumericUpDown L_status2a;
         private System.Windows.Forms.NumericUpDown L_status3a;
+        private System.Windows.Forms.Button B_SaveConfig;
     }
 }
 

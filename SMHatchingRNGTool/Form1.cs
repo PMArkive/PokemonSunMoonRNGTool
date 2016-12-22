@@ -1095,5 +1095,25 @@ namespace SMHatchingRNGTool
             System.Media.SystemSounds.Exclamation.Play();
             MessageBox.Show(msg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
         }
+
+        private void B_SaveConfig_Click(object sender, EventArgs e)
+        {
+            string[] lines =
+            {
+                status3.Text,
+                status2.Text,
+                status1.Text,
+                status0.Text,
+                TSV.Text,
+            };
+            try
+            {
+                File.WriteAllLines("config.txt", lines);
+            }
+            catch
+            {
+                Error("Unable to save config file.");
+            }
+        }
     }
 }
